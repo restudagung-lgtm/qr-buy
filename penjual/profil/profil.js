@@ -170,8 +170,7 @@ async function uploadAvatarPhoto(input){
     circle.innerHTML = `<img src="${url}" alt="">`;
   }catch(e){
     console.error('Gagal unggah foto profil:', e);
-    alert('Gagal mengunggah foto.\n\nPesan error: ' + (e.code || e.message || e) +
-      '\n\nKalau errornya menyebut "unauthorized" atau "permission", cek komentar di shared/firebase-config.js bagian Storage Rules.');
+    alert('Gagal mengunggah foto.\n\n' + explainStorageError(e));
     circle.innerHTML = oldHTML;
   }
 }
@@ -203,8 +202,7 @@ async function uploadQrisPhoto(input){
   }catch(e){
     console.error('Gagal unggah QRIS:', e);
     statusMsg.textContent = '';
-    alert('Gagal mengunggah QRIS.\n\nPesan error: ' + (e.code || e.message || e) +
-      '\n\nKalau errornya menyebut "unauthorized" atau "permission", cek komentar di shared/firebase-config.js bagian Storage Rules.');
+    alert('Gagal mengunggah QRIS.\n\n' + explainStorageError(e));
     label.textContent = oldLabel;
   }
 }

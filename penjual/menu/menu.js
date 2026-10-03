@@ -111,8 +111,7 @@ async function addMenu(){
       photoURL = await sUploadImage(`stores/${SELLER.storeId}/menu/${id}.jpg`, blob);
     }catch(e){
       console.error('Gagal unggah foto menu:', e);
-      alert('Foto gagal diunggah, tapi menu tetap akan disimpan tanpa foto.\n\nPesan error: ' + (e.code || e.message || e) +
-        '\n\nKalau errornya menyebut "unauthorized" atau "permission", cek komentar di shared/firebase-config.js bagian Storage Rules.');
+      alert('Foto gagal diunggah, tapi menu tetap akan disimpan tanpa foto.\n\n' + explainStorageError(e));
     }
   }
   await sSet('menu:' + SELLER.storeId + ':' + id, {id, storeId:SELLER.storeId, name, price, category, stock, photoURL, available:true}, true);
@@ -171,8 +170,7 @@ async function saveEditMenu(id){
       if(url) m.photoURL = url;
     }catch(e){
       console.error('Gagal unggah foto menu:', e);
-      alert('Foto baru gagal diunggah, perubahan lain tetap disimpan.\n\nPesan error: ' + (e.code || e.message || e) +
-        '\n\nKalau errornya menyebut "unauthorized" atau "permission", cek komentar di shared/firebase-config.js bagian Storage Rules.');
+      alert('Foto baru gagal diunggah, perubahan lain tetap disimpan.\n\n' + explainStorageError(e));
     }
   }
   await sSet(key, m, true);

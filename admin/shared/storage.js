@@ -128,3 +128,56 @@ async function sDeleteImage(path){
     console.warn('sDeleteImage gagal (diabaikan):', path, e);
   }
 }
+
+/*
+  explainStorageError(e)
+  -----------------------
+  Dipanggil setiap kali sUploadImage() gagal, untuk mengubah error teknis
+  Firebase jadi penjelasan + langkah perbaikan yang sesuai dengan JENIS
+  errornya (karena "gagal upload" punya beberapa kemungkinan sebab yang
+  langkah perbaikannya beda-beda).
+*/
+function explainStorageError(e){
+  const code = (e && e.code) || '';
+  const msg = (e && e.message) || String(e || '');
+  const text = (code + ' ' + msg).toLowerCase();
+
+  if(text.includes('unauthorized') || text.includes('permission')){
+    return 'Pesan error: ' + (code || msg) +
+      '\n\nSEBAB: Storage Rules menolak upload karena mewajibkan login, ' +
+      'padahal aplikasi ini tidak memakai Firebase Authentication.\n\n' +
+      'PERBAIKAN:\n1. Buka console.firebase.google.com -> pilih project "lapak-alunalun".\n' +
+      '2. Menu kiri "Build" -> "Storage" -> tab "Rules".\n' +
+      '3. Ganti isinya jadi:\n   rules_version = \'2\';\n   service firebase.storage {\n     match /b/{bucket}/o {\n       match /{allPaths=**} {\n         allow read, write: if true;\n       }\n     }\n   }\n' +
+      '4. Klik "Publish", lalu coba upload lagi.';
+  }
+
+  if(text.includes('retry-limit-exceeded') || text.includes('retry limit') ||
+     text.includes('network') || text.includes('failed to fetch') ||
+     text.includes('err_failed') || text.includes('cors') || code === '' && msg === ''){
+    return 'Pesan error: ' + (code || msg || 'koneksi ke Firebase Storage gagal total (retry-limit-exceeded / CORS blocked)') +
+      '\n\nSEBAB PALING UMUM: Firebase Storage BELUM benar-benar aktif untuk project ini ' +
+      '(belum ada "default bucket"), atau project masih di paket gratis "Spark" padahal ' +
+      'Storage sekarang mewajibkan paket "Blaze" (bayar-sesuai-pakai, tapi kuota gratis ' +
+      'bulanannya tetap ada dan biasanya cukup untuk skala warung/lapak).\n\n' +
+      'CEK & PERBAIKI (urut dari yang paling sering jadi sebab):\n' +
+      '1. Buka console.firebase.google.com -> pilih project "lapak-alunalun".\n' +
+      '2. Menu kiri "Build" -> "Storage". Kalau yang muncul tombol "Get started" / "Upgrade project" ' +
+      '(bukan daftar file), artinya Storage BELUM aktif -> klik tombol itu, lalu kalau diminta ' +
+      'upgrade ke paket Blaze, ikuti (tetap ada kuota gratis bulanan). Pilih lokasi server yang ' +
+      'SAMA dengan lokasi Firestore kamu, lalu mulai di "test mode".\n' +
+      '3. Kalau sudah ada bucket, cek nama bucket-nya di tab "Files" (biasanya tertulis di atas, ' +
+      'contoh: gs://lapak-alunalun.firebasestorage.app atau gs://lapak-alunalun.appspot.com) dan ' +
+      'cocokkan PERSIS dengan nilai "storageBucket" di shared/firebase-config.js. Kalau beda, upload ' +
+      'akan selalu gagal seperti ini -- update nilainya lalu refresh halaman.\n' +
+      '4. Kalau Storage sudah aktif & bucket sudah cocok tapi tetap gagal, cek tab "Rules" di Storage ' +
+      '(lihat langkah di atas) -- pastikan sudah "allow read, write: if true;" lalu Publish.\n' +
+      '5. Coba lagi di jaringan WiFi/data lain (jarang, tapi firewall kantor/sekolah kadang blokir ' +
+      'domain firebasestorage.googleapis.com).';
+  }
+
+  return 'Pesan error: ' + (code || msg) +
+    '\n\nKalau errornya menyebut "unauthorized" atau "permission", cek komentar di ' +
+    'shared/firebase-config.js bagian Storage Rules. Kalau errornya soal "retry-limit" atau ' +
+    'koneksi/CORS, kemungkinan besar Firebase Storage belum aktif di Firebase Console -> Build -> Storage.';
+}

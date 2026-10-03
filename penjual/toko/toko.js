@@ -119,8 +119,7 @@ async function uploadStorePhoto(input){
     label.textContent = 'Ganti foto toko';
   }catch(e){
     console.error('Gagal unggah foto toko:', e);
-    alert('Gagal mengunggah foto.\n\nPesan error: ' + (e.code || e.message || e) +
-      '\n\nKalau errornya menyebut "unauthorized" atau "permission", cek komentar di shared/firebase-config.js bagian Storage Rules.');
+    alert('Gagal mengunggah foto.\n\n' + explainStorageError(e));
     label.textContent = oldLabel;
   }
 }
@@ -153,8 +152,7 @@ async function uploadQrisPhoto(input){
   }catch(e){
     console.error('Gagal unggah QRIS:', e);
     statusMsg.textContent = '';
-    alert('Gagal mengunggah QRIS.\n\nPesan error: ' + (e.code || e.message || e) +
-      '\n\nKalau errornya menyebut "unauthorized" atau "permission", cek komentar di shared/firebase-config.js bagian Storage Rules.');
+    alert('Gagal mengunggah QRIS.\n\n' + explainStorageError(e));
     label.textContent = oldLabel;
   }
 }
